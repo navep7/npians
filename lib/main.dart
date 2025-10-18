@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -10,8 +11,38 @@ void main()  async {
   runApp(MyApp());
 }
 
+void readFirebase() async {
+
+  QuerySnapshot querySnapshot = await _firestore.collection('npians').get();
+  for (var doc in querySnapshot.docs) {
+    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+    // Process each document's data
+    registeredNames.add(data["name"]);
+    registeredNumbers.add(data["no"]);
+  }
+  _makeToast("Total R'd - ${registeredNumbers.length}");
+}
+
+void _makeToast(String s) {
+  Fluttertoast.showToast(
+      msg: s, // The message to display
+      toastLength: Toast.LENGTH_SHORT, // Duration: LENGTH_SHORT or LENGTH_LONG
+      gravity: ToastGravity.BOTTOM, // Position: TOP, BOTTOM, CENTER
+      timeInSecForIosWeb: 1, // Duration for iOS and web
+      backgroundColor: Colors.black54, // Background color
+      textColor: Colors.white, // Text color
+      fontSize: 16.0 // Font size
+  );
+
+}
+
+final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+ List registeredNumbers = [];
+ List registeredNames = [];
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
+
 
 
   // This widget is the root of your application.
@@ -64,11 +95,19 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final TextEditingController _controller = TextEditingController();
+  final TextEditingController _namecontroller = TextEditingController();
+  final TextEditingController _nocontroller = TextEditingController();
+  final TextEditingController _noLogincontroller = TextEditingController();
   String _enteredText = '';
   bool loginBool = true;
   bool signUpBool = false;
-//  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-//  final FirebaseFirestore _firestore = FirebaseFirestore.instanceof;
+
+@override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    readFirebase();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -102,7 +141,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
                       TextField(
-                        controller: _controller,
+                        controller: _noLogincontroller,
                         decoration: InputDecoration(
                           labelText: 'Mobile Number',
                           hintText: 'enter Valid No. to get an OTP ',
@@ -119,7 +158,9 @@ class _MyHomePageState extends State<MyHomePage> {
                         },
                       ),
                       SizedBox(height: 20),
-                      ElevatedButton(onPressed: _logIn, child: const Text("Login")),
+                      ElevatedButton(onPressed: () { setState(() {
+                        _logIn(_noLogincontroller.text);
+                      }); }, child: Text("LogIn")),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -138,7 +179,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: <Widget>[
                       TextField(
-                        controller: _controller,
+                        controller: _namecontroller,
                         decoration: InputDecoration(
                           labelText: 'Name',
                           hintText: 'enter Name',
@@ -152,7 +193,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         },
                       ),
                       TextField(
-                        controller: _controller,
+                        controller: _nocontroller,
                         decoration: InputDecoration(
                           labelText: 'Mob Number',
                           hintText: 'enter Valid number to get OTP',
@@ -168,7 +209,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       SizedBox(height: 25.0),
                       ElevatedButton(onPressed: _signUp, child: Text("SignUp")),
                       SizedBox(height: 125.0),
-                      ElevatedButton(onPressed: _logIn, child: Text("Or.. back to LogIn")),
+                      ElevatedButton(onPressed: _logInUI, child: Text("Or.. back to LogIn")),
                     ],
                   ),
                 )
@@ -181,7 +222,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
 
-  void _logIn() {
+  void _logInUI() {
     _makeToast("_logIn");
     setState(() {
       loginBool = true;
@@ -199,26 +240,35 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  void _makeToast(String s) {
-    Fluttertoast.showToast(
-        msg: s, // The message to display
-        toastLength: Toast.LENGTH_SHORT, // Duration: LENGTH_SHORT or LENGTH_LONG
-        gravity: ToastGravity.BOTTOM, // Position: TOP, BOTTOM, CENTER
-        timeInSecForIosWeb: 1, // Duration for iOS and web
-        backgroundColor: Colors.black54, // Background color
-        textColor: Colors.white, // Text color
-        fontSize: 16.0 // Font size
-    );
-
+  void _logIn(String no) {
+    if(registeredNumbers.contains(no)) {
+      int index = registeredNumbers.indexOf(no);
+      _makeToast("Index - $index");
+      _makeToast("Exists - ${registeredNames[index]}");
+    } else _makeToast("No Rd No, sign Up maybe!");
   }
 
   void _signUp() {
     _makeToast("A SignUP");
+    CollectionReference collectionReference = _firestore.collection("npians");
+    try {
+      collectionReference.add({
+        'name': _namecontroller.text,
+        'no': _nocontroller.text,
+        'pic': "picNP"
+      });
+      _makeToast("Successfully Signed UP, you can login now..");
+      readFirebase();
+      setState(() {
+        loginBool = true;
+        signUpBool = false;
+      });
+    } catch(ex) {
+      _makeToast("Sign UP failed, try again later..");
+    }
   }
 
-  void readFirebase() {
 
-  }
 
 
 }
