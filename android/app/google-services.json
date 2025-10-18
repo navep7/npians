@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "378052930035",
+    "project_id": "np21-efbb9",
+    "storage_bucket": "np21-efbb9.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:378052930035:android:9bb31f64cf094339448a86",
+        "android_client_info": {
+          "package_name": "com.belaku.np"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDjC3F0NVFxqlOFUp7rvESg0qvAmOz4XRY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
